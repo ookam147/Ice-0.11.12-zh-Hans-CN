@@ -25,7 +25,7 @@ final class IceBarPanel: NSPanel {
             defer: false
         )
         self.appState = appState
-        self.title = "Ice Bar"
+        self.title = "Ice 栏"
         self.titlebarAppearsTransparent = true
         self.isMovableByWindowBackground = true
         self.allowsToolTipsWhenApplicationIsInactive = true
@@ -310,24 +310,24 @@ private struct IceBarContentView: View {
     private var content: some View {
         if !ScreenCapture.cachedCheckPermissions() {
             HStack {
-                Text("The Ice Bar requires screen recording permissions.")
+                Text("Ice Bar 需要屏幕录制权限。")
 
                 Button {
                     closePanel()
                     appState.navigationState.settingsNavigationIdentifier = .advanced
                     appState.appDelegate?.openSettingsWindow()
                 } label: {
-                    Text("Open Ice Settings")
+                    Text("打开 Ice 设置")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.link)
             }
             .padding(.horizontal, 10)
         } else if menuBarManager.isMenuBarHiddenBySystemUserDefaults {
-            Text("Ice cannot display menu bar items for automatically hidden menu bars")
+            Text("在自动隐藏的菜单栏中，Ice 无法显示菜单栏项目")
                 .padding(.horizontal, 10)
         } else if imageCache.cacheFailed(for: section) {
-            Text("Unable to display menu bar items")
+            Text("无法显示菜单栏项目")
                 .padding(.horizontal, 10)
         } else {
             ScrollView(.horizontal) {

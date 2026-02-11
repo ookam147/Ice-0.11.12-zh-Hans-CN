@@ -36,6 +36,19 @@ struct ControlItemImageSet: Codable, Hashable, Identifiable {
 }
 
 extension ControlItemImageSet {
+    var localizedName: String {
+        switch name {
+        case .arrow: "箭头"
+        case .chevron: "尖角"
+        case .door: "门"
+        case .dot: "圆点"
+        case .ellipsis: "省略号"
+        case .iceCube: "冰块"
+        case .sunglasses: "墨镜"
+        case .custom: "自定义"
+        }
+    }
+
     /// The default image set for the Ice icon.
     static let defaultIceIcon = ControlItemImageSet(
         name: .dot,

@@ -36,7 +36,7 @@ struct AboutSettingsPane: View {
         if let date = updatesManager.lastUpdateCheckDate {
             date.formatted(date: .abbreviated, time: .standard)
         } else {
-            "Never"
+            "从未"
         }
     }
 
@@ -82,7 +82,7 @@ struct AboutSettingsPane: View {
                         .font(.system(size: 72, weight: .medium))
                         .foregroundStyle(.primary)
 
-                    Text("Version \(Constants.versionString)")
+                    Text("版本 \(Constants.versionString)")
                         .font(.system(size: 18))
                         .foregroundStyle(.secondary)
 
@@ -109,7 +109,7 @@ struct AboutSettingsPane: View {
     @ViewBuilder
     private var automaticallyCheckForUpdates: some View {
         Toggle(
-            "Automatically check for updates",
+            "自动检查更新",
             isOn: updatesManager.bindings.automaticallyChecksForUpdates
         )
     }
@@ -117,7 +117,7 @@ struct AboutSettingsPane: View {
     @ViewBuilder
     private var automaticallyDownloadUpdates: some View {
         Toggle(
-            "Automatically download updates",
+            "自动下载更新",
             isOn: updatesManager.bindings.automaticallyDownloadsUpdates
         )
     }
@@ -125,11 +125,11 @@ struct AboutSettingsPane: View {
     @ViewBuilder
     private var checkForUpdates: some View {
         HStack {
-            Button("Check for Updates") {
+            Button("检查更新") {
                 updatesManager.checkForUpdates()
             }
             Spacer()
-            Text("Last checked: \(lastUpdateCheckString)")
+            Text("上次检查：\(lastUpdateCheckString)")
                 .font(.caption)
         }
     }
@@ -137,20 +137,20 @@ struct AboutSettingsPane: View {
     @ViewBuilder
     private var bottomBar: some View {
         HStack {
-            Button("Quit Ice") {
+            Button("退出 Ice") {
                 NSApp.terminate(nil)
             }
             Spacer()
-            Button("Acknowledgements") {
+            Button("致谢") {
                 NSWorkspace.shared.open(acknowledgementsURL)
             }
-            Button("Contribute") {
+            Button("参与贡献") {
                 openURL(contributeURL)
             }
-            Button("Report a Bug") {
+            Button("报告问题") {
                 openURL(issuesURL)
             }
-            Button("Support Ice", systemImage: "heart.circle.fill") {
+            Button("支持 Ice", systemImage: "heart.circle.fill") {
                 openURL(donateURL)
             }
         }

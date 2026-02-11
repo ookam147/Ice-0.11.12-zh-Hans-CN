@@ -36,10 +36,10 @@ struct MenuBarAppearanceEditor: View {
     private var stackHeader: some View {
         if case .popover(let closePopover) = location {
             ZStack {
-                Text("Menu Bar Appearance")
+                Text("菜单栏外观")
                     .font(.title2)
                     .frame(maxWidth: .infinity, alignment: .center)
-                Button("Done", action: closePopover)
+                Button("完成", action: closePopover)
                     .controlSize(.large)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
@@ -68,7 +68,7 @@ struct MenuBarAppearanceEditor: View {
             } else {
                 StaticPartialEditor()
             }
-            IceSection("Menu Bar Shape") {
+            IceSection("菜单栏形状") {
                 shapePicker
                 isInset
             }
@@ -79,7 +79,7 @@ struct MenuBarAppearanceEditor: View {
                         font: .callout.bold()
                     ) {
                         Label {
-                            Text("Tip: you can also edit these settings by right-clicking in an empty area of the menu bar")
+                            Text("提示：你也可以在菜单栏空白区域右键来编辑这些设置")
                         } icon: {
                             Image(systemName: "lightbulb")
                         }
@@ -90,7 +90,7 @@ struct MenuBarAppearanceEditor: View {
                 !appState.menuBarManager.isMenuBarHiddenBySystemUserDefaults,
                 appearanceManager.configuration != .defaultConfiguration
             {
-                Button("Reset") {
+                Button("重置") {
                     appearanceManager.configuration = .defaultConfiguration
                 }
                 .controlSize(.large)
@@ -101,13 +101,13 @@ struct MenuBarAppearanceEditor: View {
 
     @ViewBuilder
     private var isDynamicToggle: some View {
-        Toggle("Use dynamic appearance", isOn: appearanceManager.bindings.configuration.isDynamic)
-            .annotation("Apply different settings based on the current system appearance")
+        Toggle("使用动态外观", isOn: appearanceManager.bindings.configuration.isDynamic)
+            .annotation("根据当前系统外观应用不同设置")
     }
 
     @ViewBuilder
     private var cannotEdit: some View {
-        Text("Ice cannot edit the appearance of automatically hidden menu bars")
+        Text("在自动隐藏的菜单栏中，Ice 无法编辑外观")
             .font(.title3)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
@@ -122,7 +122,7 @@ struct MenuBarAppearanceEditor: View {
     private var isInset: some View {
         if appearanceManager.configuration.shapeKind != .none {
             Toggle(
-                "Use inset shape on screens with notch",
+                "在带刘海屏幕上使用内嵌形状",
                 isOn: appearanceManager.bindings.configuration.isInset
             )
         }
@@ -146,9 +146,9 @@ private struct UnlabeledPartialEditor: View {
 
     @ViewBuilder
     private var tintPicker: some View {
-        IceLabeledContent("Tint") {
+        IceLabeledContent("着色") {
             HStack {
-                IcePicker("Tint", selection: $configuration.tintKind) {
+                IcePicker("着色", selection: $configuration.tintKind) {
                     ForEach(MenuBarTintKind.allCases) { tintKind in
                         Text(tintKind.localized).tag(tintKind)
                     }
@@ -179,18 +179,18 @@ private struct UnlabeledPartialEditor: View {
 
     @ViewBuilder
     private var shadowToggle: some View {
-        Toggle("Shadow", isOn: $configuration.hasShadow)
+        Toggle("阴影", isOn: $configuration.hasShadow)
     }
 
     @ViewBuilder
     private var borderToggle: some View {
-        Toggle("Border", isOn: $configuration.hasBorder)
+        Toggle("边框", isOn: $configuration.hasBorder)
     }
 
     @ViewBuilder
     private var borderColor: some View {
         if configuration.hasBorder {
-            IceLabeledContent("Border Color") {
+            IceLabeledContent("边框颜色") {
                 CustomColorPicker(
                     selection: $configuration.borderColor,
                     supportsOpacity: true,
@@ -204,7 +204,7 @@ private struct UnlabeledPartialEditor: View {
     private var borderWidth: some View {
         if configuration.hasBorder {
             IcePicker(
-                "Border Width",
+                "边框宽度",
                 selection: $configuration.borderWidth
             ) {
                 Text("1").tag(1.0)
@@ -303,7 +303,7 @@ private struct PreviewButton: View {
         ZStack {
             DummyButton(isPressed: $isPressed)
                 .allowsHitTesting(false)
-            Text("Hold to Preview")
+            Text("按住预览")
                 .baselineOffset(1.5)
                 .padding(.horizontal, 10)
                 .contentShape(Rectangle())

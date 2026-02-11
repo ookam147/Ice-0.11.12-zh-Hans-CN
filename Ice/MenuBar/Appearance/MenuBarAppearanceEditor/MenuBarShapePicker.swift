@@ -16,15 +16,15 @@ struct MenuBarShapePicker: View {
 
     @ViewBuilder
     private var shapeKindPicker: some View {
-        IcePicker("Shape Kind", selection: appearanceManager.bindings.configuration.shapeKind) {
+        IcePicker("形状类型", selection: appearanceManager.bindings.configuration.shapeKind) {
             ForEach(MenuBarShapeKind.allCases, id: \.self) { shape in
                 switch shape {
                 case .none:
-                    Text("None").tag(shape)
+                    Text("无").tag(shape)
                 case .full:
-                    Text("Full").tag(shape)
+                    Text("完整").tag(shape)
                 case .split:
-                    Text("Split").tag(shape)
+                    Text("分离").tag(shape)
                 }
             }
         }
@@ -34,7 +34,7 @@ struct MenuBarShapePicker: View {
     private var exampleView: some View {
         switch appearanceManager.configuration.shapeKind {
         case .none:
-            Text("No shape kind selected")
+            Text("未选择形状类型")
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .center)
         case .full:
@@ -88,7 +88,7 @@ private struct MenuBarFullShapeExampleView: View, Equatable {
                 context.fill(Path(context.clipBoundingRect), with: .foreground)
             }
             .resizable()
-            .help("Square Cap")
+            .help("方形端帽")
             .tag(endCap)
         case .round:
             Image(size: CGSize(width: 12, height: 12)) { context in
@@ -100,14 +100,14 @@ private struct MenuBarFullShapeExampleView: View, Equatable {
                 context.fill(path1.union(path2), with: .foreground)
             }
             .resizable()
-            .help("Round Cap")
+            .help("圆形端帽")
             .tag(endCap)
         }
     }
 
     @ViewBuilder
     private var leadingEndCapPicker: some View {
-        Picker("Leading End Cap", selection: $info.leadingEndCap) {
+        Picker("左端帽", selection: $info.leadingEndCap) {
             ForEach(MenuBarEndCap.allCases.reversed(), id: \.self) { endCap in
                 endCapPickerContentView(endCap: endCap, edge: .leading)
             }
@@ -117,7 +117,7 @@ private struct MenuBarFullShapeExampleView: View, Equatable {
 
     @ViewBuilder
     private var trailingEndCapPicker: some View {
-        Picker("Trailing End Cap", selection: $info.trailingEndCap) {
+        Picker("右端帽", selection: $info.trailingEndCap) {
             ForEach(MenuBarEndCap.allCases, id: \.self) { endCap in
                 endCapPickerContentView(endCap: endCap, edge: .trailing)
             }

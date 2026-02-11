@@ -330,7 +330,7 @@ final class MenuBarManager: ObservableObject {
         let menu = NSMenu(title: "Ice")
 
         let editItem = NSMenuItem(
-            title: "Edit Menu Bar Appearance…",
+            title: "编辑菜单栏外观…",
             action: #selector(showAppearanceEditorPopover),
             keyEquivalent: ""
         )
@@ -340,7 +340,7 @@ final class MenuBarManager: ObservableObject {
         menu.addItem(.separator())
 
         let settingsItem = NSMenuItem(
-            title: "Ice Settings…",
+            title: "Ice 设置…",
             action: #selector(AppDelegate.openSettingsWindow),
             keyEquivalent: ","
         )

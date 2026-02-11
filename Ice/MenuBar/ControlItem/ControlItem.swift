@@ -425,7 +425,7 @@ final class ControlItem {
         let menu = NSMenu(title: "Ice")
 
         let settingsItem = NSMenuItem(
-            title: "Ice Settings…",
+            title: "Ice 设置…",
             action: #selector(AppDelegate.openSettingsWindow),
             keyEquivalent: ","
         )
@@ -435,7 +435,7 @@ final class ControlItem {
         menu.addItem(.separator())
 
         let searchItem = NSMenuItem(
-            title: "Search Menu Bar Items",
+            title: "搜索菜单栏项目",
             action: #selector(showSearchPanel),
             keyEquivalent: ""
         )
@@ -462,7 +462,7 @@ final class ControlItem {
                 continue
             }
             let item = NSMenuItem(
-                title: "\(section.isHidden ? "Show" : "Hide") the \(name.displayString) Section",
+                title: "\(section.isHidden ? "显示" : "隐藏")\(name.displayString)分区",
                 action: #selector(toggleMenuBarSection),
                 keyEquivalent: ""
             )
@@ -494,7 +494,7 @@ final class ControlItem {
         menu.addItem(.separator())
 
         let checkForUpdatesItem = NSMenuItem(
-            title: "Check for Updates…",
+            title: "检查更新…",
             action: #selector(checkForUpdates),
             keyEquivalent: ""
         )
@@ -504,7 +504,7 @@ final class ControlItem {
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(
-            title: "Quit Ice",
+            title: "退出 Ice",
             action: #selector(NSApp.terminate),
             keyEquivalent: "q"
         )

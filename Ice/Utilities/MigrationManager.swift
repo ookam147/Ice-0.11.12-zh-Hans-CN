@@ -242,8 +242,8 @@ extension MigrationManager {
             }
 
             let alert = NSAlert()
-            alert.messageText = "Due to a bug in the 0.10.0 release, the data for Ice's menu bar items was corrupted and their positions had to be reset."
-            alert.informativeText = "Our sincerest apologies for the inconvenience."
+            alert.messageText = "由于 0.10.0 版本中的一个问题，Ice 的菜单栏项目数据已损坏，位置已被重置。"
+            alert.informativeText = "对此造成的不便，我们深表歉意。"
 
             return .successButShowAlert(alert)
         }

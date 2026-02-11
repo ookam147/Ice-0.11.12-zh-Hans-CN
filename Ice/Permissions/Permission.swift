@@ -118,10 +118,10 @@ class Permission: ObservableObject, Identifiable {
 final class AccessibilityPermission: Permission {
     init() {
         super.init(
-            title: "Accessibility",
+            title: "辅助功能",
             details: [
-                "Get real-time information about the menu bar.",
-                "Arrange menu bar items.",
+                "获取菜单栏的实时信息。",
+                "整理菜单栏项目。",
             ],
             isRequired: true,
             settingsURL: nil,
@@ -140,10 +140,10 @@ final class AccessibilityPermission: Permission {
 final class ScreenRecordingPermission: Permission {
     init() {
         super.init(
-            title: "Screen Recording",
+            title: "屏幕录制",
             details: [
-                "Edit the menu bar's appearance.",
-                "Display images of individual menu bar items.",
+                "编辑菜单栏外观。",
+                "显示单个菜单栏项目的图像。",
             ],
             isRequired: false,
             settingsURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"),

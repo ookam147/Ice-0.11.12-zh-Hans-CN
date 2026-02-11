@@ -32,10 +32,10 @@ struct HotkeyRecorder<Label: View>: View {
                 }
         }
         .alert(
-            "Hotkey is reserved by macOS",
+            "该快捷键被 macOS 保留",
             isPresented: $model.isPresentingReservedByMacOSError
         ) {
-            Button("OK") {
+            Button("确定") {
                 model.isPresentingReservedByMacOSError = false
             }
         }
@@ -81,7 +81,7 @@ struct HotkeyRecorder<Label: View>: View {
     @ViewBuilder
     private var leadingSegmentLabel: some View {
         if model.isRecording {
-            Text("Type Hotkey")
+            Text("按下快捷键")
         } else if model.hotkey.isEnabled {
             if let keyCombination = model.hotkey.keyCombination {
                 HStack(spacing: 0) {
@@ -89,10 +89,10 @@ struct HotkeyRecorder<Label: View>: View {
                     Text(keyCombination.key.stringValue.capitalized)
                 }
             } else {
-                Text("ERROR")
+                Text("错误")
             }
         } else {
-            Text("Record Hotkey")
+            Text("录制快捷键")
         }
     }
 

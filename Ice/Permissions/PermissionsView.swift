@@ -11,9 +11,9 @@ struct PermissionsView: View {
 
     private var continueButtonText: LocalizedStringKey {
         if case .hasRequiredPermissions = permissionsManager.permissionsState {
-            "Continue in Limited Mode"
+            "以受限模式继续"
         } else {
-            "Continue"
+            "继续"
         }
     }
 
@@ -58,7 +58,7 @@ struct PermissionsView: View {
     @ViewBuilder
     private var headerView: some View {
         Label {
-            Text("Permissions")
+            Text("权限")
                 .font(.system(size: 36))
         } icon: {
             if let nsImage = NSImage(named: NSImage.applicationIconName) {
@@ -74,8 +74,8 @@ struct PermissionsView: View {
     private var explanationView: some View {
         IceSection {
             VStack {
-                Text("Ice needs permission to manage the menu bar.")
-                Text("Absolutely no personal information is collected or stored.")
+                Text("Ice 需要权限来管理菜单栏。")
+                Text("不会收集或存储任何个人信息。")
                     .bold()
                     .foregroundStyle(.red)
             }
@@ -108,7 +108,7 @@ struct PermissionsView: View {
         Button {
             NSApp.terminate(nil)
         } label: {
-            Text("Quit")
+            Text("退出")
                 .frame(maxWidth: .infinity)
         }
     }
@@ -139,7 +139,7 @@ struct PermissionsView: View {
                     .underline()
 
                 VStack(spacing: 0) {
-                    Text("Ice needs this to:")
+                    Text("Ice 需要此权限来：")
                         .font(.title3)
                         .bold()
 
@@ -165,10 +165,10 @@ struct PermissionsView: View {
                     }
                 } label: {
                     if permission.hasPermission {
-                        Text("Permission Granted")
+                        Text("已授予")
                             .foregroundStyle(.green)
                     } else {
-                        Text("Grant Permission")
+                        Text("授予权限")
                     }
                 }
                 .allowsHitTesting(!permission.hasPermission)
@@ -180,7 +180,7 @@ struct PermissionsView: View {
                             font: .callout.bold()
                         ) {
                             Label {
-                                Text("Ice can work in a limited mode without this permission.")
+                                Text("即使没有此权限，Ice 也可在受限模式下运行。")
                             } icon: {
                                 Image(systemName: "checkmark.shield")
                                     .foregroundStyle(.green)
