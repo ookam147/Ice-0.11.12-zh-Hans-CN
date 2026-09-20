@@ -6,7 +6,6 @@
 import AXSwift
 import Combine
 import Cocoa
-import ScreenCaptureKit
 
 // MARK: - Permission
 
@@ -21,8 +20,6 @@ class Permission: ObservableObject, Identifiable {
     let title: String
     /// Descriptive details for the permission.
     let details: [String]
-    /// A Boolean value that indicates if the app can work without this permission.
-    let isRequired: Bool
 
     /// The URL of the settings pane to open.
     private let settingsURL: URL?
@@ -41,21 +38,18 @@ class Permission: ObservableObject, Identifiable {
     /// - Parameters:
     ///   - title: The title of the permission.
     ///   - details: Descriptive details for the permission.
-    ///   - isRequired: A Boolean value that indicates if the app can work without this permission.
     ///   - settingsURL: The URL of the settings pane to open.
     ///   - check: A function that checks permissions.
     ///   - request: A function that requests permissions.
     init(
         title: String,
         details: [String],
-        isRequired: Bool,
         settingsURL: URL?,
         check: @escaping () -> Bool,
         request: @escaping () -> Void
     ) {
         self.title = title
         self.details = details
-        self.isRequired = isRequired
         self.settingsURL = settingsURL
         self.check = check
         self.request = request
@@ -123,35 +117,12 @@ final class AccessibilityPermission: Permission {
                 "获取菜单栏的实时信息。",
                 "整理菜单栏项目。",
             ],
-            isRequired: true,
             settingsURL: nil,
             check: {
                 checkIsProcessTrusted()
             },
             request: {
                 checkIsProcessTrusted(prompt: true)
-            }
-        )
-    }
-}
-
-// MARK: - ScreenRecordingPermission
-
-final class ScreenRecordingPermission: Permission {
-    init() {
-        super.init(
-            title: "屏幕录制",
-            details: [
-                "编辑菜单栏外观。",
-                "显示单个菜单栏项目的图像。",
-            ],
-            isRequired: false,
-            settingsURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"),
-            check: {
-                ScreenCapture.checkPermissions()
-            },
-            request: {
-                ScreenCapture.requestPermissions()
             }
         )
     }

@@ -30,7 +30,6 @@ extension MigrationManager {
 
         let results = [
             manager.migrate0_10_1(),
-            manager.migrate0_11_10(),
         ]
 
         for result in results {
@@ -252,57 +251,6 @@ extension MigrationManager {
     }
 }
 
-// MARK: - Migrate 0.11.10
-
-extension MigrationManager {
-    private func migrate0_11_10() -> MigrationResult {
-        guard !Defaults.bool(forKey: .hasMigrated0_11_10) else {
-            return .success
-        }
-        let result = migrateAppearanceConfiguration0_11_10()
-        switch result {
-        case .success, .successButShowAlert:
-            Defaults.set(true, forKey: .hasMigrated0_11_10)
-            Logger.migration.info("Successfully migrated to 0.11.10 settings")
-        case .failureAndLogError:
-            break
-        }
-        return result
-    }
-
-    private func migrateAppearanceConfiguration0_11_10() -> MigrationResult {
-        guard let oldData = Defaults.data(forKey: .menuBarAppearanceConfiguration) else {
-            return .failureAndLogError(.appearanceConfigurationMigrationError(.missingConfiguration))
-        }
-        do {
-            let oldConfiguration = try decoder.decode(MenuBarAppearanceConfigurationV1.self, from: oldData)
-            let newConfiguration = with(MenuBarAppearanceConfigurationV2.defaultConfiguration) { configuration in
-                let partialConfiguration = MenuBarAppearancePartialConfiguration(
-                    hasShadow: oldConfiguration.hasShadow,
-                    hasBorder: oldConfiguration.hasBorder,
-                    borderColor: oldConfiguration.borderColor,
-                    borderWidth: oldConfiguration.borderWidth,
-                    tintKind: oldConfiguration.tintKind,
-                    tintColor: oldConfiguration.tintColor,
-                    tintGradient: oldConfiguration.tintGradient
-                )
-                configuration.lightModeConfiguration = partialConfiguration
-                configuration.darkModeConfiguration = partialConfiguration
-                configuration.staticConfiguration = partialConfiguration
-                configuration.shapeKind = oldConfiguration.shapeKind
-                configuration.fullShapeInfo = oldConfiguration.fullShapeInfo
-                configuration.splitShapeInfo = oldConfiguration.splitShapeInfo
-                configuration.isInset = oldConfiguration.isInset
-            }
-            let newData = try encoder.encode(newConfiguration)
-            Defaults.set(newData, forKey: .menuBarAppearanceConfigurationV2)
-        } catch {
-            return .failureAndLogError(.appearanceConfigurationMigrationError(.otherError(error)))
-        }
-        return .success
-    }
-}
-
 // MARK: - Helpers
 
 extension MigrationManager {
@@ -354,7 +302,6 @@ extension MigrationManager {
         case invalidMenuBarSectionsJSONObject(Any)
         case hotkeyMigrationError(any Error)
         case controlItemMigrationError(any Error)
-        case appearanceConfigurationMigrationError(AppearanceConfigurationMigrationError)
         case combinedError([any Error])
 
         var description: String {
@@ -365,24 +312,8 @@ extension MigrationManager {
                 "Error migrating hotkeys: \(error)"
             case .controlItemMigrationError(let error):
                 "Error migrating control items: \(error)"
-            case .appearanceConfigurationMigrationError(let error):
-                "Error migrating menu bar appearance configuration: \(error)"
             case .combinedError(let errors):
                 "The following errors occurred: \(errors)"
-            }
-        }
-    }
-
-    enum AppearanceConfigurationMigrationError: Error, CustomStringConvertible {
-        case otherError(any Error)
-        case missingConfiguration
-
-        var description: String {
-            switch self {
-            case .otherError(let error):
-                error.localizedDescription
-            case .missingConfiguration:
-                "Missing menu bar appearance configuration"
             }
         }
     }

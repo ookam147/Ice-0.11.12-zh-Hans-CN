@@ -50,7 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // If we have the required permissions, set up the shared app state.
             // Otherwise, open the permissions window.
             switch appState.permissionsManager.permissionsState {
-            case .hasAllPermissions, .hasRequiredPermissions:
+            case .hasAllPermissions:
                 appState.performSetup()
             case .missingPermissions:
                 appState.activate(withPolicy: .regular)

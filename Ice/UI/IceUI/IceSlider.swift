@@ -3,10 +3,9 @@
 //  Ice
 //
 
-import CompactSlider
 import SwiftUI
 
-struct IceSlider<Value: BinaryFloatingPoint, ValueLabel: View, ValueLabelSelectability: TextSelectability>: View {
+struct IceSlider<Value: BinaryFloatingPoint, ValueLabel: View, ValueLabelSelectability: TextSelectability>: View where Value.Stride: BinaryFloatingPoint {
     private let value: Binding<Value>
     private let bounds: ClosedRange<Value>
     private let step: Value
@@ -45,15 +44,15 @@ struct IceSlider<Value: BinaryFloatingPoint, ValueLabel: View, ValueLabelSelecta
     }
 
     var body: some View {
-        CompactSlider(
-            value: value,
-            in: bounds,
-            step: step,
-            handleVisibility: .hovering(width: 1)
-        ) {
+        HStack {
+            if step > 0 {
+                Slider(value: value, in: bounds, step: Value.Stride(step))
+            } else {
+                Slider(value: value, in: bounds)
+            }
             valueLabel
                 .textSelection(valueLabelSelectability)
+                .monospacedDigit()
         }
-        .compactSliderDisabledHapticFeedback(true)
     }
 }

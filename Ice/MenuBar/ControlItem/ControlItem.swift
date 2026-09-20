@@ -137,6 +137,7 @@ final class ControlItem {
 
     /// Configures the internal observers for the control item.
     private func configureCancellables() {
+        statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         var c = Set<AnyCancellable>()
 
         $state
@@ -261,23 +262,6 @@ final class ControlItem {
                         return
                     }
                     updateStatusItem(with: state)
-                }
-                .store(in: &c)
-
-            appState.settingsManager.generalSettingsManager.$useIceBar
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] useIceBar in
-                    guard
-                        let self,
-                        let button = statusItem.button
-                    else {
-                        return
-                    }
-                    if useIceBar {
-                        button.sendAction(on: [.leftMouseDown, .rightMouseUp])
-                    } else {
-                        button.sendAction(on: [.leftMouseUp, .rightMouseUp])
-                    }
                 }
                 .store(in: &c)
 

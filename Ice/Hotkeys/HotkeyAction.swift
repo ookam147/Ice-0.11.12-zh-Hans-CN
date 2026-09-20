@@ -12,7 +12,6 @@ enum HotkeyAction: String, Codable, CaseIterable {
     case searchMenuBarItems = "SearchMenuBarItems"
 
     // Other
-    case enableIceBar = "EnableIceBar"
     case showSectionDividers = "ShowSectionDividers"
     case toggleApplicationMenus = "ToggleApplicationMenus"
 
@@ -39,8 +38,6 @@ enum HotkeyAction: String, Codable, CaseIterable {
             }
         case .searchMenuBarItems:
             await appState.menuBarManager.searchPanel.toggle()
-        case .enableIceBar:
-            appState.settingsManager.generalSettingsManager.useIceBar.toggle()
         case .showSectionDividers:
             appState.settingsManager.advancedSettingsManager.showSectionDividers.toggle()
         case .toggleApplicationMenus:

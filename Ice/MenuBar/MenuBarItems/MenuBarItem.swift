@@ -238,3 +238,19 @@ private extension MenuBarItemInfo {
         }
     }
 }
+
+// MARK: - Search presentation
+extension MenuBarItem {
+    var searchIdentity: MenuBarSearchIdentity {
+        MenuBarSearchIdentity(windowID: windowID, ownerPID: ownerPID)
+    }
+
+    /// Unknown system-hosted items are omitted rather than guessed or merged.
+    var searchDisplayName: String? {
+        MenuBarSearchPolicy.displayName(
+            namespace: info.namespace.rawValue,
+            title: title,
+            applicationName: displayName
+        )
+    }
+}

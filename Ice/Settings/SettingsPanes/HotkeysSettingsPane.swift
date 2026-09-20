@@ -22,7 +22,6 @@ struct HotkeysSettingsPane: View {
                 hotkeyRecorder(forAction: .searchMenuBarItems)
             }
             IceSection("其他") {
-                hotkeyRecorder(forAction: .enableIceBar)
                 hotkeyRecorder(forAction: .showSectionDividers)
                 hotkeyRecorder(forAction: .toggleApplicationMenus)
             }
@@ -40,8 +39,6 @@ struct HotkeysSettingsPane: View {
                     Text("切换始终隐藏分区")
                 case .searchMenuBarItems:
                     Text("搜索菜单栏项目")
-                case .enableIceBar:
-                    Text("启用 Ice Bar")
                 case .showSectionDividers:
                     Text("显示分区分隔符")
                 case .toggleApplicationMenus:

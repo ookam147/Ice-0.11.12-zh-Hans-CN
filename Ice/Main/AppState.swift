@@ -12,9 +12,6 @@ final class AppState: ObservableObject {
     /// A Boolean value that indicates whether the active space is fullscreen.
     @Published private(set) var isActiveSpaceFullscreen = Bridging.isSpaceFullscreen(Bridging.activeSpaceID)
 
-    /// Manager for the menu bar's appearance.
-    private(set) lazy var appearanceManager = MenuBarAppearanceManager(appState: self)
-
     /// Manager for events received by the app.
     private(set) lazy var eventManager = EventManager(appState: self)
 
@@ -35,9 +32,6 @@ final class AppState: ObservableObject {
 
     /// Manager for user notifications.
     private(set) lazy var userNotificationManager = UserNotificationManager(appState: self)
-
-    /// Global cache for menu bar item images.
-    private(set) lazy var imageCache = MenuBarItemImageCache(appState: self)
 
     /// Manager for menu bar item spacing.
     let spacingManager = MenuBarItemSpacingManager()
@@ -109,16 +103,6 @@ final class AppState: ObservableObject {
         }
         .store(in: &c)
 
-        NSWorkspace.shared.publisher(for: \.frontmostApplication)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] frontmostApplication in
-                guard let self else {
-                    return
-                }
-                navigationState.isAppFrontmost = frontmostApplication == .current
-            }
-            .store(in: &c)
-
         if let settingsWindow {
             settingsWindow.publisher(for: \.isVisible)
                 .debounce(for: 0.05, scheduler: DispatchQueue.main)
@@ -132,26 +116,6 @@ final class AppState: ObservableObject {
         } else {
             Logger.appState.warning("No settings window!")
         }
-
-        Publishers.Merge(
-            navigationState.$isAppFrontmost,
-            navigationState.$isSettingsPresented
-        )
-        .debounce(for: 0.1, scheduler: DispatchQueue.main)
-        .sink { [weak self] shouldUpdate in
-            guard
-                let self,
-                shouldUpdate
-            else {
-                return
-            }
-            Task.detached {
-                if ScreenCapture.cachedCheckPermissions(reset: true) {
-                    await self.imageCache.updateCacheWithoutChecks(sections: MenuBarSection.Name.allCases)
-                }
-            }
-        }
-        .store(in: &c)
 
         menuBarManager.objectWillChange
             .sink { [weak self] in
@@ -182,11 +146,9 @@ final class AppState: ObservableObject {
         configureCancellables()
         permissionsManager.stopAllChecks()
         menuBarManager.performSetup()
-        appearanceManager.performSetup()
         eventManager.performSetup()
         settingsManager.performSetup()
         itemManager.performSetup()
-        imageCache.performSetup()
         updatesManager.performSetup()
         userNotificationManager.performSetup()
     }

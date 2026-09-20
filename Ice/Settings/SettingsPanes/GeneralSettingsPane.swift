@@ -3,7 +3,6 @@
 //  Ice
 //
 
-import LaunchAtLogin
 import SwiftUI
 
 struct GeneralSettingsPane: View {
@@ -61,9 +60,6 @@ struct GeneralSettingsPane: View {
                 iceIconOptions
             }
             IceSection {
-                iceBarOptions
-            }
-            IceSection {
                 showOnClick
                 showOnHover
                 showOnScroll
@@ -85,7 +81,7 @@ struct GeneralSettingsPane: View {
 
     @ViewBuilder
     private var launchAtLogin: some View {
-        LaunchAtLogin.Toggle()
+        LoginItemToggle()
     }
 
     @ViewBuilder
@@ -169,39 +165,6 @@ struct GeneralSettingsPane: View {
             if case .custom = manager.iceIcon.name {
                 Toggle("图标跟随系统主题", isOn: manager.bindings.customIceIconIsTemplate)
                     .annotation("将图标显示为与系统外观一致的单色图像")
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var iceBarOptions: some View {
-        useIceBar
-        if manager.useIceBar {
-            iceBarLocationPicker
-        }
-    }
-
-    @ViewBuilder
-    private var useIceBar: some View {
-        Toggle("使用 Ice Bar", isOn: manager.bindings.useIceBar)
-            .annotation("在菜单栏下方的独立栏中显示隐藏的菜单栏项目")
-    }
-
-    @ViewBuilder
-    private var iceBarLocationPicker: some View {
-        IcePicker("位置", selection: manager.bindings.iceBarLocation) {
-            ForEach(IceBarLocation.allCases) { location in
-                Text(location.localized).tag(location)
-            }
-        }
-        .annotation {
-            switch manager.iceBarLocation {
-            case .dynamic:
-                Text("Ice Bar 的位置会根据当前场景自动变化")
-            case .mousePointer:
-                Text("Ice Bar 会显示在鼠标指针正下方")
-            case .iceIcon:
-                Text("Ice Bar 会显示在 Ice 图标正下方")
             }
         }
     }

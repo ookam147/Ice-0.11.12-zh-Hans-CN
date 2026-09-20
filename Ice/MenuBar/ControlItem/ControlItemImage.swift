@@ -33,6 +33,12 @@ enum ControlItemImage: Codable, Hashable {
             guard let originalImage = NSImage(named: name) else {
                 return nil
             }
+            // Command-line builds store PNGs as ordinary bundle resources. Preserve
+            // the asset catalog's template intent when actool is unavailable.
+            if let templateNames = Bundle.main.object(forInfoDictionaryKey: "IceTemplateImageNames") as? [String],
+               templateNames.contains(name) {
+                originalImage.isTemplate = true
+            }
             let originalWidth = originalImage.size.width
             let originalHeight = originalImage.size.height
             let ratio = max(originalWidth / 25, originalHeight / 17)

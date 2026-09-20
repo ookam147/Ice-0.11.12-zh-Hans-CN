@@ -1,3 +1,5 @@
+> 本仓库已改为 **macOS 原生精简版**：保留菜单栏管理与文字搜索，移除 Ice Bar、截图预览和菜单栏美化。功能差异、验证结果及构建方法见 [精简版说明](docs/NATIVE_LITE.md)。下面保留上游项目介绍，其中部分功能和下载链接不适用于此精简版。
+
 <div align="center">
     <img src="Ice/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width=200 height=200>
     <h1>Ice</h1>

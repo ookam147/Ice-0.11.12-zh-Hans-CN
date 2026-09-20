@@ -54,7 +54,7 @@ final class MenuBarItemManager: ObservableObject {
 
         /// Returns the name of the section for the given menu bar item.
         func section(for item: MenuBarItem) -> MenuBarSection.Name? {
-            for (section, items) in self.items where items.contains(where: { $0.info == item.info }) {
+            for (section, items) in self.items where items.contains(where: { $0.searchIdentity == item.searchIdentity }) {
                 return section
             }
             return nil
@@ -69,8 +69,8 @@ final class MenuBarItemManager: ObservableObject {
 
     /// Context for a temporarily shown menu bar item.
     private struct TempShownItemContext {
-        /// The information associated with the item.
-        let info: MenuBarItemInfo
+        /// Runtime identity prevents a same-named item from being restored instead.
+        let identity: MenuBarSearchIdentity
 
         /// The destination to return the item to.
         let returnDestination: MoveDestination
@@ -255,7 +255,7 @@ extension MenuBarItemManager {
         var tempShownItems = [(MenuBarItem, MoveDestination)]()
 
         for item in otherItems {
-            if let context = tempShownItemContexts.first(where: { $0.info == item.info }) {
+            if let context = tempShownItemContexts.first(where: { $0.identity == item.searchIdentity }) {
                 // Keep track of temporarily shown items and their return destinations separately.
                 // We want to cache them as if they were in their original locations. Once all other
                 // items are cached, use the return destinations to insert the items into the cache
@@ -283,7 +283,7 @@ extension MenuBarItemManager {
                 default:
                     if
                         let section = cache.section(for: targetItem),
-                        let index = cache[section].firstIndex(matching: targetItem.info)
+                        let index = cache[section].firstIndex(where: { $0.searchIdentity == targetItem.searchIdentity })
                     {
                         let clampedIndex = index.clamped(to: cache[section].startIndex...cache[section].endIndex)
                         cache[section].insert(item, at: clampedIndex)
@@ -298,7 +298,7 @@ extension MenuBarItemManager {
                 default:
                     if
                         let section = cache.section(for: targetItem),
-                        let index = cache[section].firstIndex(matching: targetItem.info)
+                        let index = cache[section].firstIndex(where: { $0.searchIdentity == targetItem.searchIdentity })
                     {
                         let clampedIndex = (index - 1).clamped(to: cache[section].startIndex...cache[section].endIndex)
                         cache[section].insert(item, at: clampedIndex)
@@ -313,6 +313,7 @@ extension MenuBarItemManager {
     /// Caches the current menu bar items if needed, ensuring that the control
     /// items are in the correct order.
     func cacheItemsIfNeeded() async {
+        guard !Task.isCancelled else { return }
         do {
             try await waitForItemsToStopMoving(timeout: .seconds(1))
         } catch is TaskTimeoutError {
@@ -325,6 +326,7 @@ extension MenuBarItemManager {
             }
         }
 
+        guard !Task.isCancelled else { return }
         let itemWindowIDs = Bridging.getWindowList(option: [.menuBarItems, .activeSpace])
         if cachedItemWindowIDs == itemWindowIDs {
             logSkippingCache(reason: "item windows have not changed")
@@ -1168,6 +1170,13 @@ extension MenuBarItemManager {
 extension MenuBarItemManager {
     /// Clicks the given menu bar item with the given mouse button.
     func click(item: MenuBarItem, with mouseButton: CGMouseButton) async throws {
+        guard
+            let current = MenuBarItem(windowID: item.windowID),
+            current.searchIdentity == item.searchIdentity,
+            current.isCurrentlyInMenuBar
+        else {
+            throw EventError(code: .invalidItem, item: item)
+        }
         guard let source = CGEventSource(stateID: .hidSystemState) else {
             throw EventError(code: .invalidEventSource, item: item)
         }
@@ -1258,8 +1267,7 @@ extension MenuBarItemManager {
 extension MenuBarItemManager {
     /// Gets the destination to return the given item to after it is temporarily shown.
     private func getReturnDestination(for item: MenuBarItem, in items: [MenuBarItem]) -> MoveDestination? {
-        let info = item.info
-        if let index = items.firstIndex(where: { $0.info == info }) {
+        if let index = items.firstIndex(where: { $0.searchIdentity == item.searchIdentity }) {
             if items.indices.contains(index + 1) {
                 return .leftOfItem(items[index + 1])
             } else if items.indices.contains(index - 1) {
@@ -1298,10 +1306,15 @@ extension MenuBarItemManager {
     ///     clicked once movement is finished.
     ///   - mouseButton: The mouse button of the click.
     func tempShowItem(_ item: MenuBarItem, clickWhenFinished: Bool, mouseButton: CGMouseButton) {
-        if
+        guard
             let latest = MenuBarItem(windowID: item.windowID),
-            latest.isOnScreen
-        {
+            latest.searchIdentity == item.searchIdentity,
+            latest.isCurrentlyInMenuBar
+        else {
+            return
+        }
+        let item = latest
+        if latest.isOnScreen {
             if clickWhenFinished {
                 Task {
                     do {
@@ -1332,10 +1345,11 @@ extension MenuBarItemManager {
             return
         }
 
-        // Remove all items up to the hidden control item.
-        items.trimPrefix { $0.info != .hiddenControlItem }
-        // Remove the hidden control item.
-        items.removeFirst()
+        // A section can disappear between selection and activation.
+        guard let hiddenIndex = items.firstIndex(matching: .hiddenControlItem) else {
+            return
+        }
+        items.removeSubrange(...hiddenIndex)
         // Remove all offscreen items.
         items.trimPrefix { !$0.isOnScreen }
 
@@ -1385,7 +1399,7 @@ extension MenuBarItemManager {
             }
 
             let context = TempShownItemContext(
-                info: item.info,
+                identity: item.searchIdentity,
                 returnDestination: destination,
                 shownInterfaceWindow: shownInterfaceWindow
             )
@@ -1432,7 +1446,7 @@ extension MenuBarItemManager {
         }
 
         while let context = tempShownItemContexts.popLast() {
-            guard let item = items.first(where: { $0.info == context.info }) else {
+            guard let item = items.first(where: { $0.searchIdentity == context.identity }) else {
                 continue
             }
             do {
@@ -1451,13 +1465,6 @@ extension MenuBarItemManager {
             Logger.itemManager.warning("Some items failed to rehide")
             runTempShownItemTimer(for: 3)
         }
-    }
-
-    /// Removes a temporarily shown item from the cache.
-    ///
-    /// This ensures that the item will _not_ be returned to its previous location.
-    func removeTempShownItemFromCache(with info: MenuBarItemInfo) {
-        tempShownItemContexts.removeAll { $0.info == info }
     }
 }
 

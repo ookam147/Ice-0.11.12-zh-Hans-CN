@@ -37,14 +37,6 @@ final class EventManager {
         return event
     }
 
-    /// Monitor for mouse up events.
-    private(set) lazy var mouseUpMonitor = UniversalEventMonitor(
-        mask: .leftMouseUp
-    ) { [weak self] event in
-        self?.handleLeftMouseUp()
-        return event
-    }
-
     /// Monitor for mouse dragged events.
     private(set) lazy var mouseDraggedMonitor = UniversalEventMonitor(
         mask: .leftMouseDragged
@@ -74,7 +66,6 @@ final class EventManager {
     /// All monitors maintained by the app.
     private lazy var allMonitors = [
         mouseDownMonitor,
-        mouseUpMonitor,
         mouseDraggedMonitor,
         mouseMovedMonitor,
         scrollWheelMonitor,
@@ -192,11 +183,6 @@ extension EventManager {
             }
         }
 
-        // Make sure clicking the Ice Bar doesn't trigger rehide.
-        guard event.window !== appState.menuBarManager.iceBarPanel else {
-            return
-        }
-
         // Only continue if a section is currently visible.
         guard appState.menuBarManager.sections.contains(where: { !$0.isHidden }) else {
             return
@@ -271,7 +257,6 @@ extension EventManager {
         guard
             let appState,
             appState.settingsManager.generalSettingsManager.showOnHover,
-            !appState.settingsManager.generalSettingsManager.useIceBar,
             isMouseInsideMenuBar
         else {
             return
@@ -302,15 +287,6 @@ extension EventManager {
         }
     }
 
-    // MARK: Handle Left Mouse Up
-
-    private func handleLeftMouseUp() {
-        guard let appearanceManager = appState?.appearanceManager else {
-            return
-        }
-        appearanceManager.setIsDraggingMenuBarItem(false)
-    }
-
     // MARK: Handle Left Mouse Dragged
 
     private func handleLeftMouseDragged(with event: NSEvent) {
@@ -321,9 +297,6 @@ extension EventManager {
         else {
             return
         }
-
-        // Notify each overlay panel that a menu bar item is being dragged.
-        appState.appearanceManager.setIsDraggingMenuBarItem(true)
 
         // Don't continue if the setting to show the sections is disabled.
         guard appState.settingsManager.advancedSettingsManager.showAllSectionsOnUserDrag else {
@@ -377,18 +350,12 @@ extension EventManager {
                 }
                 hiddenSection.show()
             } else {
-                guard
-                    !self.isMouseInsideMenuBar,
-                    !self.isMouseInsideIceBar
-                else {
+                guard !self.isMouseInsideMenuBar else {
                     return
                 }
                 try? await Task.sleep(for: .seconds(delay))
                 // Make sure the mouse is still outside.
-                guard
-                    !self.isMouseInsideMenuBar,
-                    !self.isMouseInsideIceBar
-                else {
+                guard !self.isMouseInsideMenuBar else {
                     return
                 }
                 hiddenSection.hide()
@@ -517,22 +484,6 @@ extension EventManager {
         !isMouseInsideApplicationMenu &&
         !isMouseInsideMenuBarItem &&
         !isMouseInsideNotch
-    }
-
-    /// A Boolean value that indicates whether the mouse pointer is within
-    /// the bounds of the Ice Bar panel.
-    var isMouseInsideIceBar: Bool {
-        guard
-            let appState,
-            let mouseLocation = MouseCursor.locationAppKit
-        else {
-            return false
-        }
-        let panel = appState.menuBarManager.iceBarPanel
-        // Pad the frame to be more forgiving if the user accidentally
-        // moves their mouse outside of the Ice Bar.
-        let paddedFrame = panel.frame.insetBy(dx: -10, dy: -10)
-        return paddedFrame.contains(mouseLocation)
     }
 
     /// A Boolean value that indicates whether the mouse pointer is within

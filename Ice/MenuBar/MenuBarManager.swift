@@ -10,9 +10,6 @@ import SwiftUI
 /// Manager for the state of the menu bar.
 @MainActor
 final class MenuBarManager: ObservableObject {
-    /// Information for the menu bar's average color.
-    @Published private(set) var averageColorInfo: MenuBarAverageColorInfo?
-
     /// A Boolean value that indicates whether the menu bar is either always hidden
     /// by the system, or automatically hidden and shown by the system based on the
     /// location of the mouse.
@@ -34,22 +31,11 @@ final class MenuBarManager: ObservableObject {
     /// The managed sections in the menu bar.
     private(set) var sections = [MenuBarSection]()
 
-    /// The panel that contains the Ice Bar interface.
-    let iceBarPanel: IceBarPanel
-
-    /// The panel that contains the menu bar search interface.
-    let searchPanel: MenuBarSearchPanel
-
-    /// A Boolean value that indicates whether the manager can update its stored
-    /// information for the menu bar's average color.
-    private var canUpdateAverageColorInfo: Bool {
-        appState?.settingsWindow?.isVisible == true
-    }
+    /// Created only when search is first requested.
+    private(set) lazy var searchPanel = MenuBarSearchPanel(appState: appState)
 
     /// Initializes a new menu bar manager instance.
     init(appState: AppState) {
-        self.iceBarPanel = IceBarPanel(appState: appState)
-        self.searchPanel = MenuBarSearchPanel(appState: appState)
         self.appState = appState
     }
 
@@ -57,7 +43,6 @@ final class MenuBarManager: ObservableObject {
     func performSetup() {
         initializeSections()
         configureCancellables()
-        iceBarPanel.performSetup()
     }
 
     /// Performs the initial setup of the menu bar manager's sections.
@@ -131,20 +116,6 @@ final class MenuBarManager: ObservableObject {
                         hiddenSection.hide()
                     }
                 }
-            }
-            .store(in: &c)
-
-        appState?.settingsWindow?.publisher(for: \.isVisible)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.updateAverageColorInfo()
-            }
-            .store(in: &c)
-
-        Timer.publish(every: 5, on: .main, in: .default)
-            .autoconnect()
-            .sink { [weak self] _ in
-                self?.updateAverageColorInfo()
             }
             .store(in: &c)
 
@@ -223,56 +194,6 @@ final class MenuBarManager: ObservableObject {
         cancellables = c
     }
 
-    /// Updates the ``averageColorInfo`` property with the current average color
-    /// of the menu bar.
-    func updateAverageColorInfo() {
-        guard
-            canUpdateAverageColorInfo,
-            let screen = appState?.settingsWindow?.screen
-        else {
-            return
-        }
-
-        let image: CGImage?
-        let source: MenuBarAverageColorInfo.Source
-
-        let windows = WindowInfo.getOnScreenWindows(excludeDesktopWindows: false)
-        let displayID = screen.displayID
-
-        if let window = WindowInfo.getMenuBarWindow(from: windows, for: displayID) {
-            var bounds = window.frame
-            bounds.size.height = 1
-            bounds.origin.x = bounds.maxX - (bounds.width / 4)
-            bounds.size.width /= 4
-
-            image = ScreenCapture.captureWindow(window.windowID, screenBounds: bounds, option: .nominalResolution)
-            source = .menuBarWindow
-        } else if let window = WindowInfo.getWallpaperWindow(from: windows, for: displayID) {
-            var bounds = window.frame
-            bounds.size.height = 1
-            bounds.origin.x = bounds.midX
-            bounds.size.width /= 2
-
-            image = ScreenCapture.captureWindow(window.windowID, screenBounds: bounds, option: .nominalResolution)
-            source = .desktopWallpaper
-        } else {
-            return
-        }
-
-        guard
-            let image,
-            let color = image.averageColor(makeOpaque: true)
-        else {
-            return
-        }
-
-        let info = MenuBarAverageColorInfo(color: color, source: source)
-
-        if averageColorInfo != info {
-            averageColorInfo = info
-        }
-    }
-
     /// Returns a Boolean value that indicates whether the given display
     /// has a valid menu bar.
     func hasValidMenuBar(in windows: [WindowInfo], for display: CGDirectDisplayID) -> Bool {
@@ -329,16 +250,6 @@ final class MenuBarManager: ObservableObject {
     func showRightClickMenu(at point: CGPoint) {
         let menu = NSMenu(title: "Ice")
 
-        let editItem = NSMenuItem(
-            title: "编辑菜单栏外观…",
-            action: #selector(showAppearanceEditorPopover),
-            keyEquivalent: ""
-        )
-        editItem.target = self
-        menu.addItem(editItem)
-
-        menu.addItem(.separator())
-
         let settingsItem = NSMenuItem(
             title: "Ice 设置…",
             action: #selector(AppDelegate.openSettingsWindow),
@@ -380,17 +291,6 @@ final class MenuBarManager: ObservableObject {
         }
     }
 
-    /// Shows the appearance editor popover, centered under the menu bar.
-    @objc private func showAppearanceEditorPopover() {
-        guard let appState else {
-            Logger.menuBarManager.error("Error showing appearance editor popover: Missing app state")
-            return
-        }
-        let panel = MenuBarAppearanceEditorPanel(appState: appState)
-        panel.orderFrontRegardless()
-        panel.showAppearanceEditorPopover()
-    }
-
     /// Returns the menu bar section with the given name.
     func section(withName name: MenuBarSection.Name) -> MenuBarSection? {
         sections.first { $0.name == name }
@@ -399,19 +299,6 @@ final class MenuBarManager: ObservableObject {
 
 // MARK: MenuBarManager: BindingExposable
 extension MenuBarManager: BindingExposable { }
-
-// MARK: - MenuBarAverageColorInfo
-
-/// Information for the menu bar's average color.
-struct MenuBarAverageColorInfo: Hashable {
-    enum Source: Hashable {
-        case menuBarWindow
-        case desktopWallpaper
-    }
-
-    var color: CGColor
-    var source: Source
-}
 
 // MARK: - Logger
 private extension Logger {

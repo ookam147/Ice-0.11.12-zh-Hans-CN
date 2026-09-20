@@ -9,22 +9,6 @@ struct PermissionsView: View {
     @EnvironmentObject var permissionsManager: PermissionsManager
     @Environment(\.openWindow) private var openWindow
 
-    private var continueButtonText: LocalizedStringKey {
-        if case .hasRequiredPermissions = permissionsManager.permissionsState {
-            "以受限模式继续"
-        } else {
-            "继续"
-        }
-    }
-
-    private var continueButtonForegroundStyle: some ShapeStyle {
-        if case .hasRequiredPermissions = permissionsManager.permissionsState {
-            AnyShapeStyle(.yellow)
-        } else {
-            AnyShapeStyle(.primary)
-        }
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             headerView
@@ -123,9 +107,8 @@ struct PermissionsView: View {
             appState.permissionsWindow?.close()
             appState.appDelegate?.openSettingsWindow()
         } label: {
-            Text(continueButtonText)
+            Text("继续")
                 .frame(maxWidth: .infinity)
-                .foregroundStyle(continueButtonForegroundStyle)
         }
         .disabled(permissionsManager.permissionsState == .missingPermissions)
     }
@@ -172,22 +155,6 @@ struct PermissionsView: View {
                     }
                 }
                 .allowsHitTesting(!permission.hasPermission)
-
-                if !permission.isRequired {
-                    IceGroupBox {
-                        AnnotationView(
-                            alignment: .center,
-                            font: .callout.bold()
-                        ) {
-                            Label {
-                                Text("即使没有此权限，Ice 也可在受限模式下运行。")
-                            } icon: {
-                                Image(systemName: "checkmark.shield")
-                                    .foregroundStyle(.green)
-                            }
-                        }
-                    }
-                }
             }
             .padding(10)
             .frame(maxWidth: .infinity)
