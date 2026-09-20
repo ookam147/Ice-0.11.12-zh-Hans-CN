@@ -10,7 +10,7 @@ import tempfile
 
 from typecheck import ROOT, prepare_dependencies
 
-OUTPUT = ROOT / "build/NativeLite-CLT"
+OUTPUT = ROOT / "build/NativeLite-CLT-hover-fix"
 
 
 def run(*args, log=None):

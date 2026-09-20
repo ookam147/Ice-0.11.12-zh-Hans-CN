@@ -162,6 +162,7 @@ private struct MenuBarSearchContentView: View {
     @State private var searchText = ""
     @State private var rows = [Row]()
     @State private var selection: MenuBarSearchIdentity?
+    @State private var hoveredRow: MenuBarSearchIdentity?
     @State private var icons = [pid_t: NSImage]()
     @FocusState private var searchFieldIsFocused: Bool
 
@@ -197,10 +198,29 @@ private struct MenuBarSearchContentView: View {
                                         Text(row.title)
                                         Spacer()
                                     }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 8)
+                                    .background {
+                                        if hoveredRow == row.id {
+                                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                                .fill(
+                                                    selection == row.id
+                                                        ? Color.white.opacity(0.14)
+                                                        : Color.accentColor.opacity(0.13)
+                                                )
+                                        }
+                                    }
                                     .contentShape(Rectangle())
-                                    .onTapGesture(count: 2) {
+                                    .onHover { isHovering in
+                                        if isHovering {
+                                            hoveredRow = row.id
+                                        } else if hoveredRow == row.id {
+                                            hoveredRow = nil
+                                        }
+                                    }
+                                    .onTapGesture {
                                         selection = row.id
-                                        performSelection()
+                                        performSelection(row.id)
                                     }
                                     .padding(.vertical, 4)
                                     .tag(row.id)
@@ -237,7 +257,10 @@ private struct MenuBarSearchContentView: View {
                     Label("设置", systemImage: "gearshape")
                 }
                 Spacer()
-                Button("打开所选项目", action: performSelection)
+                Button("打开所选项目") {
+                    guard let selection else { return }
+                    performSelection(selection)
+                }
                     .disabled(selection == nil)
             }
             .padding(10)
@@ -256,7 +279,10 @@ private struct MenuBarSearchContentView: View {
         }
         .onKeyDown(key: .downArrow) { moveSelection(by: 1) }
         .onKeyDown(key: .upArrow) { moveSelection(by: -1) }
-        .onKeyDown(key: .return, action: performSelection)
+        .onKeyDown(key: .return) {
+            guard let selection else { return }
+            performSelection(selection)
+        }
     }
 
     private func updateRows() {
@@ -283,6 +309,9 @@ private struct MenuBarSearchContentView: View {
         }
         icons = newIcons
         rows = newRows
+        if let hoveredRow, !newRows.contains(where: { $0.id == hoveredRow }) {
+            self.hoveredRow = nil
+        }
         selection = MenuBarSearchPolicy.selection(keeping: selection, available: newRows.map(\.id))
     }
 
@@ -293,12 +322,14 @@ private struct MenuBarSearchContentView: View {
         selection = rows[nextIndex].id
     }
 
-    private func performSelection() {
-        guard let selection, rows.contains(where: { $0.id == selection }) else { return }
+    private func performSelection(_ selection: MenuBarSearchIdentity) {
+        guard rows.contains(where: { $0.id == selection }) else { return }
         closePanel()
         Task { @MainActor [weak itemManager] in
-            // Let the panel dismiss before opening another application's menu.
-            try? await Task.sleep(for: .milliseconds(25))
+            // A row action runs at the end of the user's mouse-up event. Give AppKit
+            // enough time to dismiss the nonactivating panel before synthesizing a
+            // second click for another process's menu bar item.
+            try? await Task.sleep(for: .milliseconds(120))
             guard
                 let itemManager,
                 let item = MenuBarItem(windowID: selection.windowID),
